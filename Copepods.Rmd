@@ -59,6 +59,13 @@ feeding rates - how much of the food is in the sample did the copepods eat
 
 clearance rate - volume of water multiplied by natural log ...
 
+```{r}
+
+library("readxl")
+rawcount <- read_excel("100_400_RawCount_R.xlsx")
+
+```
+
 
 
 
