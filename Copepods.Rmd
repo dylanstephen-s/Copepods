@@ -8,3 +8,79 @@ date: "2022-10-25"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Notes
+main food source for larval fishes, delta smelt
+4 sampling locations, 4 different habitat types, maybe one habitat type is better
+calculated growth rates for copepods
+counted microzoo plankton samples, available food sources (others have studied chlorophyll only phytoplankton) This will include all microplankton
+
+two samples per location, discarded 2
+ended with 6 samples
+
+# variables
+samp_ev = location name
+exp 
+IC - intial controls
+
+sa - short axis
+la - long axis
+wi - width
+
+ignore pres_fact, vol_set_ml, n_bugs, time_d
+
+# treatments
+final - sample bottles after 24 hours
+treatments - sample water plus copepods eat for 24 hours
+initial
+
+3 replicates per sample
+
+tot_vol_um3
+tot_biomass_pgC
+
+# she did
+1) calculate biomass
+
+
+# goal
+what kind of food was available and how does that compare to growth rates?
+
+relationship between growth rates and biomass
+
+reproduction rate:
+
+# what needs to be done
+ctbm_grptyp_with_site
+organisms
+
+consolidate each organism into small and large, by biomass?
+
+feeding rates - how much of the food is in the sample did the copepods eat
+
+clearance rate - volume of water multiplied by natural log ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
