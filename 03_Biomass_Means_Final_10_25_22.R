@@ -17,7 +17,7 @@ library(readxl)
 library(writexl)
 
 
-load("data/volbio_all_no0.Rdata")
+load("volbio_all_no0.Rdata")
 names(volbio_all_no0)
 
 ## Calculate total counts of specific organism per sample 
@@ -79,4 +79,7 @@ sjr1_cil <- sjr1_categories %>%
 
 #save(sjr1_categories, file = "sjr1_categories")
 #write_xlsx(sjr1_categories, "sjr1_categories.xlsx")
+
+
+
 

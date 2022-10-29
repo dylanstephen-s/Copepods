@@ -17,7 +17,7 @@ counted microzoo plankton samples, available food sources (others have studied c
 two samples per location, discarded 2
 ended with 6 samples
 
-# variables
+## variables
 samp_ev = location name
 exp 
 IC - intial controls
@@ -28,7 +28,7 @@ wi - width
 
 ignore pres_fact, vol_set_ml, n_bugs, time_d
 
-# treatments
+## treatments
 final - sample bottles after 24 hours
 treatments - sample water plus copepods eat for 24 hours
 initial
@@ -38,18 +38,18 @@ initial
 tot_vol_um3
 tot_biomass_pgC
 
-# she did
+## already done
 1) calculate biomass
 
 
-# goal
+## goal
 what kind of food was available and how does that compare to growth rates?
 
 relationship between growth rates and biomass
 
 reproduction rate:
 
-# what needs to be done
+## what needs to be done
 ctbm_grptyp_with_site
 organisms
 
@@ -59,17 +59,336 @@ feeding rates - how much of the food is in the sample did the copepods eat
 
 clearance rate - volume of water multiplied by natural log ...
 
+# Analysis
+## Read in Data
 ```{r}
+library(readxl)
+headers100 <- read.csv(file="100xHeaders.csv")
+headers400 <- read.csv("400xHeaders.csv")
+voll_mass <- read.csv("Clean Data/vollbio_all_no0.csv")
+RawcountComb <- read.csv("Clean Data/RawcountComb.csv")
+headersComb <- read.csv("Clean Data/headersComb.csv")
+volbio_all_no0 <- read.csv("Clean Data/vollbio_all_no0.csv")
+ct_bmn_fin <- read.csv("Clean Data/ct_bmn_fin.csv")
 
-library("readxl")
-rawcount <- read_excel("100_400_RawCount_R.xlsx")
+# combine these with a key
+#Rawcount400 <- read_excel("400x_RawCount_R.xlsx")
+#Rawcount100 <- read_excel("100x_RawCount_R.xlsx")
+#Rawcount100$zoom = 100
+#Rawcount400$zoom = 400
+#RawcountComb <- rbind(Rawcount100, Rawcount400)
+
+#headers100$zoom = 100
+#headers400$zoom = 400
+#headersComb <- rbind(headers100, headers400)
 
 ```
 
 
+## Microplankton ambient analysis
+### Counts by groups
+```{r}
+library(ggplot2)
+#unique(volbio_all_no0$Group)
+# about 10 groups already
+ggplot(volbio_all_no0, aes(Group, counts, color=Group))+
+  geom_boxplot()+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank())
+
+```
+
+###  biomass by groups
+```{r}
+ggplot(volbio_all_no0, aes(Group, tot_biomass_pgC, color=Group))+
+  geom_boxplot()+
+  theme(axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) +
+    coord_cartesian(ylim = c(0, 200000))
+# ran this zoomed in which doesnt show top outliers but better representation of true data
+
+
+```
+
+### Counts by groups percent of each sampling event
+```{r}
+ggplot(volbio_all_no0, aes(fill=Group, y=counts, x= samp_ev))+
+  geom_bar(position='fill', stat='identity')
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+### Biomass by groups percent of each sampling event
+```{r}
+ggplot(volbio_all_no0, aes(fill=Group, y=tot_biomass_pgC, x= samp_ev))+
+  geom_bar(position='fill', stat='identity')
+```
+
+### Biomass by groups percent of each experimental sample
+```{r}
+# sort by factoring to get desired ordering
+volbio_all_no0$exp <- factor(volbio_all_no0$exp, levels = c("FC", "IC","T24", "site"))
+
+ggplot(volbio_all_no0, aes(fill=Group, y=tot_biomass_pgC, x= exp))+
+  geom_bar(position='fill', stat='identity')
+```
+*Note: maybe we can remove unidentified for this*
+
+#### percentage
+```{r}
+# this version has no unidentified
+volbio_all_id <- subset(volbio_all_no0, Group!="unidentified")
+
+ggplot(volbio_all_id, aes(fill=Group, y=tot_biomass_pgC, x= exp))+
+  geom_bar(position='fill', stat='identity')
+
+```
+
+#### stacked
+```{r}
+# this version has no unidentified
+volbio_all_id <- subset(volbio_all_no0, Group!="unidentified")
+
+ggplot(volbio_all_id, aes(fill=Group, y=tot_biomass_pgC, x= exp))+
+  geom_bar(position='stack', stat='identity')
+
+```
+
+###  Counts by groups percent of each experimental sample
+
+```{r}
+ggplot(volbio_all_no0, aes(fill=Group, y=counts, x= exp))+
+  geom_bar(position='fill', stat='identity')
+```
+
+#### percentage
+```{r}
+ggplot(volbio_all_id, aes(fill=Group, y=counts, x= exp))+
+  geom_bar(position='fill', stat='identity')
+
+```
+
+#### stacked
+```{r}
+ggplot(volbio_all_id, aes(fill=Group, y=counts, x= exp))+
+  geom_bar(position='stack', stat='identity')
+
+```
+
+### Counts and biomass by groups by sampling event by experimental sample
+*Could potentially do this by doing a grid of experimental samples*
+
+## Counts and biomass per volume
+
+## Aggregate organism categories
+
+### Count and biomass per volume aggregated
+
+*This may no be possible:*
+## Counts and biomass by groups by sampling event by experimental sample by
+replicate.
+
+There is just too much information to display here
+
+# Other graphs of organisms by counts by sampling event separate graphs
+
+### Counts by groups percent of each sampling event
+```{r}
+# Split into sampling events
+LSZ2 = subset(volbio_all_no0, samp_ev == "LSZ2")
+WLD2 = subset(volbio_all_no0, samp_ev == "WLD2")
+YBP1 = subset(volbio_all_no0, samp_ev == "YBP1")
+YBP2 = subset(volbio_all_no0, samp_ev == "YBP2")
+SJR1 = subset(volbio_all_no0, samp_ev == "SJR1")
+SJR2 = subset(volbio_all_no0, samp_ev == "SJR2")
+```
+
+#### LSZ2
+```{r}
+ggplot(LSZ2, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+#### WLD2
+```{r}
+ggplot(WLD2, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+#### YBP1
+```{r}
+ggplot(YBP1, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+#### YBP2
+```{r}
+ggplot(YBP2, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+#### SJR1
+```{r}
+ggplot(SJR1, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+#### SJR2
+```{r}
+ggplot(SJR2, aes(fill=Group, y=counts, x= Group))+
+  geom_bar(stat='identity')+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+# with the ct_bmn_fin data
+```{r}
+
+# Split into sampling events
+LSZ2 = subset(ct_bmn_fin, samp_ev == "LSZ2")
+WLD2 = subset(ct_bmn_fin, samp_ev == "WLD2")
+YBP1 = subset(ct_bmn_fin, samp_ev == "YBP1")
+YBP2 = subset(ct_bmn_fin, samp_ev == "YBP2")
+SJR1 = subset(ct_bmn_fin, samp_ev == "SJR1")
+SJR2 = subset(ct_bmn_fin, samp_ev == "SJR2")
+
+```
+
+## LSZ2 example with log scale
+```{r}
+p1 <- ggplot(LSZ2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+## WLD2 example with log scale
+```{r}
+p2 <- ggplot(WLD2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+## YBP1 example with log scale
+```{r}
+p3 <- ggplot(YBP1, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+## YBP2 example with log scale
+```{r}
+p4 <- ggplot(YBP2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+## SJR1 example with log scale
+```{r}
+p5 <- ggplot(SJR1, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+# SJR2
+```{r}
+p6 <- ggplot(SJR2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
+  geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+# also try postion = 'stack' for a stacked barchart
+```
+
+# all together
+```{r}
+library(gridExtra)
+grid.arrange(p1,p2,p3,p4,p5,p6, nrow=3)
+```
 
 
 
+# List of the organisms in FC that were not in T24
+```{r}
+# FC
+FC <- RawcountComb[grepl("FC", colnames(RawcountComb))]
+FC <- cbind(FC, total = rowSums(FC, na.rm=T))
+FC <- cbind(FC, RawcountComb$name)
+FC <- data.frame(FC$`RawcountComb$name`, FC$total)
+names(FC)[1] <- "org"
+names(FC)[2] <- "total"
+FC[FC==0]<-NA
+FC <- FC[complete.cases(FC),]
+FC <- FC$org
+
+# T24
+T24 <- RawcountComb[grepl("T24", colnames(RawcountComb))]
+T24 <- cbind(T24, total = rowSums(T24, na.rm=T))
+T24 <- cbind(T24, RawcountComb$name)
+T24 <- data.frame(T24$`RawcountComb$name`, T24$total)
+names(T24)[1] <- "org"
+names(T24)[2] <- "total"
+T24[T24==0]<-NA
+T24 <- T24[complete.cases(T24),]
+T24 <- T24$org
+
+# Now there are two lists return the list of unmatched
+print(FC[!(FC %in% T24)])
+# 106 species
+
+```
+
+## barchart of groups by first part of their names
+```{r}
+library(stringr)
+unmatched <- FC[!(FC %in% T24)]
+bar_un <- data.frame(unmatched)
+bar_un$unknown <- str_count(bar_un$unmatched,"un")
+bar_un$diatom <- str_count(bar_un$unmatched,"dia")
+bar_un$dinoflaggellate <- str_count(bar_un$unmatched,"dino")
+bar_un$cyanobacteria <- str_count(bar_un$unmatched,"cya")
+bar_un$ciliate <- str_count(bar_un$unmatched,"cil")
+bar_un$chlorophyte <- str_count(bar_un$unmatched,"chl")
+bar_un$flagellate <- str_count(bar_un$unmatched,"fla")
+bar_un$ochrophyre <- str_count(bar_un$unmatched,"och")
+bar_un$tintinnid <- str_count(bar_un$unmatched,"tin")
+# not sure about diatom cylindrotheca
+
+# remove column with names and sum
+bar_un <- bar_un[,-1]
+bar_sums <- colSums(bar_un)
+bar_sums <- data.frame(bar_sums)
+bar_sums <- cbind(group = rownames(bar_sums), bar_sums)
+
+# make graph
+ggplot(data=bar_sums, aes(x=group, y=bar_sums, color=group))+
+  geom_bar(stat="identity")+
+  theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
+
+```
+
+
+# Potential Anaylses:
+## PCA
+# Maps
 
 
 
