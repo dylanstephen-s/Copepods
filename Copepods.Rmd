@@ -71,6 +71,9 @@ headersComb <- read.csv("Clean Data/headersComb.csv")
 volbio_all_no0 <- read.csv("Clean Data/vollbio_all_no0.csv")
 ct_bmn_fin <- read.csv("Clean Data/ct_bmn_fin.csv")
 
+# For now use this dataframe for everything
+ctmb_grptype <- read.csv("Clean Data/ctbmn_grptype.csv")
+
 # combine these with a key
 #Rawcount400 <- read_excel("400x_RawCount_R.xlsx")
 #Rawcount100 <- read_excel("100x_RawCount_R.xlsx")
@@ -86,6 +89,83 @@ ct_bmn_fin <- read.csv("Clean Data/ct_bmn_fin.csv")
 
 
 ## Microplankton ambient analysis
+## Using the cbmn group data make the graph with 39 groups total counts on y and separate graphs for each sampling event
+#### Split data into sampling events
+```{r}
+# Split into sampling events
+LSZ2 = subset(ctbmn_grptyp, samp_ev == "LSZ2")
+WLD2 = subset(ctbmn_grptyp, samp_ev == "WLD2")
+YBP1 = subset(ctbmn_grptyp, samp_ev == "YBP1")
+YBP2 = subset(ctbmn_grptyp, samp_ev == "YBP2")
+SJR1 = subset(ctbmn_grptyp, samp_ev == "SJR1")
+SJR2 = subset(ctbmn_grptyp, samp_ev == "SJR2")
+```
+
+####SJR1 stacked barchart with experiments
+```{r}
+library(ggplot2)
+ggplot(data= SJR1, aes(x= reorder(grp_typ, tot_ct, FUN = sum), y=tot_ct, fill=exp))+
+  geom_bar(position='stack', stat='identity')+
+  coord_flip(ylim=c(0,75))+
+  labs(x="", y="Total Count")
+
+```
+
+### Manipulate data according to idea in overview
+*no type column in ctbmn_grptyp*
+```{r}
+# create long row with all these different values
+ctbmn_grptyp$category <- paste(ctbmn_grptyp$grp_typ, ctbmn_grptyp$sa, ctbmn_grptyp$la)
+
+# take the mean value
+ctbmn_grptyp$mean_ct <- ctbmn_grptyp$tot_ct / 3
+
+# why is there multiple values group by and summarize
+# appears all the values are unique
+library(tidyverse)
+grouped_ctbmn_grptyp <- ctbmn_grptyp %>%
+  group_by(category, exp, samp_ev)%>%
+  summarise_at(vars(mean_ct), list(name = mean))
+
+```
+
+#### take a look at what groups we can aggregate
+```{r}
+# mean is around 50 very wide spread data
+boxplot(ctbmn_grptyp$bmn_pgml, ylim=c(0,100))
+
+# categorize data by 4 groups
+# https://rcompanion.org/handbook/E_05.html
+Percentile_00  = min(ctbmn_grptyp$bmn_pgml)
+Percentile_33  = quantile(ctbmn_grptyp$bmn_pgml, 0.33333)
+Percentile_67  = quantile(ctbmn_grptyp$bmn_pgml, 0.66667)
+Percentile_100 = max(ctbmn_grptyp$bmn_pgml)
+
+RB = rbind(Percentile_00, Percentile_33, Percentile_67, Percentile_100)
+
+dimnames(RB)[[2]] = "Value"
+
+RB
+ctbmn_grptyp$size_cat = NA
+
+ctbmn_grptyp$size_cat[ctbmn_grptyp$bmn_pgml >= Percentile_00 & ctbmn_grptyp$bmn_pgml <  Percentile_33]  = "small"
+
+ctbmn_grptyp$size_cat[ctbmn_grptyp$bmn_pgml >= Percentile_33 & ctbmn_grptyp$bmn_pgml <  Percentile_67]  = "medium"
+
+ctbmn_grptyp$size_cat[ctbmn_grptyp$bmn_pgml >= Percentile_67 & ctbmn_grptyp$bmn_pgml <= Percentile_100] = "large"
+
+# could divide this up into 2 categories or maybe graph the types of individuals by size
+ggplot(data= ctbmn_grptyp, aes(x= reorder(exp, mean_ct, FUN = sum), y=mean_ct, fill=size_cat))+
+  geom_bar(position='stack', stat='identity')+
+  coord_flip()+
+  labs(x="", y="Mean Count")
+
+
+```
+
+
+
+## USing Volbio data
 ### Counts by groups
 ```{r}
 library(ggplot2)
@@ -178,9 +258,9 @@ ggplot(volbio_all_id, aes(fill=Group, y=counts, x= exp))+
 ### Counts and biomass by groups by sampling event by experimental sample
 *Could potentially do this by doing a grid of experimental samples*
 
-## Counts and biomass per volume
+### Counts and biomass per volume
 
-## Aggregate organism categories
+### Aggregate organism categories
 
 ### Count and biomass per volume aggregated
 
@@ -208,8 +288,6 @@ SJR2 = subset(volbio_all_no0, samp_ev == "SJR2")
 ggplot(LSZ2, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 #### WLD2
@@ -217,8 +295,6 @@ ggplot(LSZ2, aes(fill=Group, y=counts, x= Group))+
 ggplot(WLD2, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 #### YBP1
@@ -226,8 +302,6 @@ ggplot(WLD2, aes(fill=Group, y=counts, x= Group))+
 ggplot(YBP1, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 #### YBP2
@@ -235,8 +309,6 @@ ggplot(YBP1, aes(fill=Group, y=counts, x= Group))+
 ggplot(YBP2, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 #### SJR1
@@ -244,8 +316,6 @@ ggplot(YBP2, aes(fill=Group, y=counts, x= Group))+
 ggplot(SJR1, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 #### SJR2
@@ -254,7 +324,6 @@ ggplot(SJR2, aes(fill=Group, y=counts, x= Group))+
   geom_bar(stat='identity')+
   theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
 
-# also try postion = 'stack' for a stacked barchart
 ```
 
 # with the ct_bmn_fin data
@@ -274,16 +343,12 @@ SJR2 = subset(ct_bmn_fin, samp_ev == "SJR2")
 ```{r}
 p1 <- ggplot(LSZ2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 ## WLD2 example with log scale
 ```{r}
 p2 <- ggplot(WLD2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 ## YBP1 example with log scale
@@ -291,34 +356,27 @@ p2 <- ggplot(WLD2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct
 p3 <- ggplot(YBP1, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
 
-# also try postion = 'stack' for a stacked barchart
 ```
 
 ## YBP2 example with log scale
 ```{r}
 p4 <- ggplot(YBP2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
 ## SJR1 example with log scale
 ```{r}
 p5 <- ggplot(SJR1, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
-# SJR2
+## SJR2
 ```{r}
 p6 <- ggplot(SJR2, aes(fill=Group, y=log_mean_ct, x= reorder(Group, -log_mean_ct)))+
   geom_boxplot() + theme(axis.ticks.x = element_blank(),axis.text.x = element_blank())
-
-# also try postion = 'stack' for a stacked barchart
 ```
 
-# all together
+## all together
 ```{r}
 library(gridExtra)
 grid.arrange(p1,p2,p3,p4,p5,p6, nrow=3)
