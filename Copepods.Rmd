@@ -446,6 +446,84 @@ ggplot(data=bar_sums, aes(x=group, y=bar_sums, color=group))+
 
 # Potential Anaylses:
 ## PCA
+```{r}
+library(dplyr)
+# Drop columns
+spp_mat <- subset(RawcountComb, select = -c(wi, la,sa,shp,name,type,Group, X, X.1, zoom))
+
+# set index and drop row
+rownames(spp_mat) = spp_mat$Organism
+
+spp_mat <- subset(spp_mat, select = -c(Organism))
+
+# make it a matrix 
+spp_mat <- as.matrix(spp_mat)
+# transpose
+spp_mat = t(spp_mat)
+
+# make a vector of clean values for locations
+location <- gsub(".site", "", rownames(spp_mat))
+location <- gsub(".FC.1", "", location)
+location <- gsub(".FC.2", "", location)
+location <- gsub(".FC.3", "", location)
+location <- gsub(".T24.1", "",location)
+location <- gsub(".T24.2", "", location)
+location <- gsub(".T24.3", "", location)
+location <- gsub(".IC.1", "", location)
+location <- gsub(".IC.2", "", location)
+location <- gsub(".IC.3", "", location)
+
+# bind with matrix
+spp_mat <- cbind(spp_mat, location)
+
+# Make log
+library(vegan)
+# make graph
+library(plotly)
+library(ggfortify)
+library(factoextra)
+
+# Potentially create different ecosystem colors, or different classification
+spp_mat[is.na(spp_mat)] <- 0
+
+# remove category
+spp_mat_sh_g <- spp_mat[,0:338]
+
+class(spp_mat_sh_g) <- "numeric"
+
+spp_mat_sh_g <- log1p(spp_mat_sh_g)
+
+pca_res <- prcomp(spp_mat_sh_g, scale. = F)
+
+p <- autoplot(pca_res, data=spp_mat, colour= 'location', labels=F, shape=T)
+ggplotly(p)
+
+#try again
+
+######################################################################################
+
+spp_mat_sh$Category <- spp_ts$Category
+
+# 303 columns, 303 is Category
+
+# make graph
+library(plotly)
+library(ggfortify)
+
+spp_mat_sh[is.na(spp_mat_sh)] <- 0
+
+# remove category
+spp_mat_sh_g <- spp_mat_sh[,0:61]
+
+spp_mat_sh_g <- log1p(spp_mat_sh_g)
+
+pca_res <- prcomp(spp_mat_sh_g, scale.=F)
+
+p <- autoplot(pca_res, data=spp_mat_sh, colour= 'Category', labels=T, shape = F, label.size=5)
+ggplotly(p)
+
+```
+
 # Maps
 
 
