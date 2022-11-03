@@ -109,14 +109,14 @@ YBP1 = subset(ctbmn_grptyp_mnct_grped, samp_ev == "YBP1")
 YBP2 = subset(ctbmn_grptyp_mnct_grped, samp_ev == "YBP2")
 SJR1 = subset(ctbmn_grptyp_mnct_grped, samp_ev == "SJR1")
 
-ggplot(data= SJR1, aes(x= reorder(grp_typ, -average, FUN = sum), y=average, color=exp))+
+ggplot(data= YBP1, aes(x= reorder(grp_typ, -average, FUN = sum), y=average, color=exp))+
   geom_point(stat="identity", position='identity', size = 3)+
   geom_smooth(formula = y~x, method = "lm")+
 #  coord_flip(ylim=c(0,75))+
-  labs(x="", title = "SJR1 Mean Counts")+
-  theme(axis.text.x = element_text(angle = 90))+
+  labs(x="", title = "YBP1 Mean Counts")+
+  theme(axis.text.x = element_text(angle = 90), axis.text.y = element_text(size=6))+
   scale_color_manual(values=c('#999999','#E69F00', '#56B4E9'))+
-  scale_y_continuous(name = "Avaerage of Total Counts", breaks = seq(0,1080, 20))
+  scale_y_continuous(name = "Avaerage of Total Counts", breaks = seq(0,1080, 50))
 
 ```
 ```
