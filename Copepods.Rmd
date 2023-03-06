@@ -799,10 +799,331 @@ ggplotly(p)
 
 # Maps
 
+# FR Groups Plots
+```{r}
+load("C:/Users/dylan/OneDrive/Desktop/Copepods/Copepods/FR_Groups/FrGrps.Rdata")
+
+library(readxl)
+library(ggplot2)
+FrGrps <- read_excel("FR_Groups/FrGrps.xlsx")
+
+```
 
 
+## Things to do
+1) Numbers that fall below zero are a different color (done)
+2) FrmnCpm indpeendent and second FMnBpm on y axis
+3) Negative numbers don't show up, or if they are really close to 0 (done)
+4) Shift x axis labels so that they are more to the left end of word going up to line. (Done)
+5) Separate into separate plots, going to have to split (done)
+
+Original Code
+```{r}
+p <- 	ggplot(FrGrps, aes(x=group_size, FRmnCpm))+
+   		geom_bar(stat = "identity", aes(fill = FRmnCpm <= 0))+
+      scale_colour_manual(name = "FRmnCpm", values = c('TRUE' = "pink", 'FALSE' = "cyan"))+
+   		scale_x_discrete ("") +
+   		scale_y_continuous(trans = "log10") +
+      theme(axis.text.x = element_text(angle = 60, hjust = 0.8, vjust = 0.8, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		facet_wrap(~ event, ncol= 2, scales="free") +
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")
+
+p
+
+```
+
+Add a column that is color depending on if value below 0
+```{r}
+FrGrps$color = "True"
+FrGrps$color[FrGrps$FRmnCpm <= 0 ] = "False"
+
+```
+
+Split data
+```{r}
+# subset and transform into groups
+SJR2 = subset(FrGrps, event == "SJR2")
+SJR2$tfcpm <- log10(SJR2$FRmnCpm + (-1 * min(SJR2$FRmnCpm)) + 1.1)
+SJR2$tfbpm <- log10(SJR2$FRmnBpm + (-1 * min(SJR2$FRmnBpm)) + 1.1)
+
+YBP1 = subset(FrGrps, event == "YBP1")
+YBP1$tfcpm <- log10(YBP1$FRmnCpm + (-1 * min(YBP1$FRmnCpm)) + 1.1)
+YBP1$tfbpm <- log10(YBP1$FRmnBpm + (-1 * min(YBP1$FRmnBpm)) + 1.1)
+
+LSZ2 = subset(FrGrps, event == "LSZ2")
+LSZ2$tfcpm <- log10(LSZ2$FRmnCpm + (-1 * min(LSZ2$FRmnCpm)) + 1.1)
+LSZ2$tfbpm <- log10(LSZ2$FRmnBpm + (-1 * min(LSZ2$FRmnBpm)) + 1.1)
+
+SJR1 = subset(FrGrps, event == "SJR1")
+SJR1$tfcpm <- log10(SJR1$FRmnCpm + (-1 * min(SJR1$FRmnCpm)) + 1.1)
+SJR1$tfbpm <- log10(SJR1$FRmnBpm + (-1 * min(SJR1$FRmnBpm)) + 1.1)
+
+YBP2 = subset(FrGrps, event == "YBP2")
+YBP2$tfcpm <- log10(YBP2$FRmnCpm + (-1 * min(YBP2$FRmnCpm)) + 1.1)
+YBP2$tfbpm <- log10(YBP2$FRmnBpm + (-1 * min(YBP2$FRmnBpm)) + 1.1)
+
+WLD2 = subset(FrGrps, event == "WLD2")
+WLD2$tfcpm <- log10(WLD2$FRmnCpm + (-1 * min(WLD2$FRmnCpm)) + 1.1)
+WLD2$tfbpm <- log10(WLD2$FRmnBpm + (-1 * min(WLD2$FRmnBpm)) + 1.1)
+```
 
 
+# FrmnCpm
+## SJR2
+```{r}
+pdf(file = "FR_Groups/Plots/SJR2_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(SJR2, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(SJR2$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("SJR2 FrmnCpm")
+
+dev.off()
+```
+
+## SJR1
+```{r}
+pdf(file = "FR_Groups/Plots/SJR1_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(SJR1, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(SJR1$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("SJR1 FrmnCpm")
+
+dev.off()
+```
+
+## WLD2
+```{r}
+pdf(file = "FR_Groups/Plots/WLD2_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(WLD2, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(WLD2$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("WLD2 FrmnCpm")
+
+dev.off()
+```
+
+## YBP1
+```{r}
+pdf(file = "FR_Groups/Plots/YBP1_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(YBP1, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(YBP1$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("YBP1 FrmnCpm")
+
+dev.off()
+```
+
+## YBP2
+```{r}
+pdf(file = "FR_Groups/Plots/YBP2_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(YBP2, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(YBP2$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("YBP2 FrmnCpm")
+
+dev.off()
+```
+
+## LSZ2
+```{r}
+pdf(file = "FR_Groups/Plots/LSZ2_FrmnCpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(LSZ2, aes(x=group_size,
+                 y = tfcpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(LSZ2$tfcpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("LSZ2 FrmnCpm")
+
+dev.off()
+```
+
+
+# FrmBpm
+## SJR2
+```{r}
+pdf(file = "FR_Groups/Plots/SJR2_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(SJR2, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(SJR2$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("SJR2 FrmnBpm")
+
+dev.off()
+```
+
+## SJR1
+```{r}
+pdf(file = "FR_Groups/Plots/SJR1_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(SJR1, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(SJR1$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("SJR1 FrmnBpm")
+
+dev.off()
+```
+
+## WLD2
+```{r}
+pdf(file = "FR_Groups/Plots/WLD2_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(WLD2, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(WLD2$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("WLD2 FrmnBpm")
+
+dev.off()
+```
+
+## YBP1
+```{r}
+pdf(file = "FR_Groups/Plots/YBP1_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(YBP1, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(YBP1$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("YBP1 FrmnBpm")
+
+dev.off()
+```
+
+## YBP2
+```{r}
+pdf(file = "FR_Groups/Plots/YBP2_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(YBP2, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(YBP2$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("YBP2 FrmnBpm")
+
+dev.off()
+```
+
+## LSZ2
+```{r}
+pdf(file = "FR_Groups/Plots/LSZ2_FrmnBpm.pdf",
+    width = 10,
+    height = 10)
+
+ggplot(LSZ2, aes(x=group_size,
+                 y = tfbpm,
+                 fill = color))+
+   		geom_bar(stat = "identity")+
+   		scale_y_continuous(limits = c(0,max(LSZ2$tfbpm)+.5)) +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1.15, vjust = 1.1, size = 12),
+         	strip.text.x = element_text(size = 14))+
+   		xlab("Taxa Groups with Sizes") +
+   		ylab("Feeding Rate, Counts per ml")+
+      guides(fill = guide_legend(title="More than 0"))+
+      ggtitle("LSZ2 FrmnBpm")
+
+dev.off()
+```
 
 
 
