@@ -79,6 +79,10 @@ ctmb_grptype <- read.csv("Clean Data/ctbmn_grptype.csv")
 # or this one
 ctbmn_grptyp_mnct <- read_excel("ctbmn_grptyp_mnct.xlsx")
 
+# for mean and other value coutns graph
+grpsz_reps <- read.csv(file="Grpsz_reps.csv")
+ctsum_rep_mn <- read.csv(file="ctsum_rep_mn_no0.csv")
+
 # combine these with a key
 #Rawcount400 <- read_excel("400x_RawCount_R.xlsx")
 #Rawcount100 <- read_excel("100x_RawCount_R.xlsx")
@@ -90,7 +94,118 @@ ctbmn_grptyp_mnct <- read_excel("ctbmn_grptyp_mnct.xlsx")
 #headers400$zoom = 400
 #headersComb <- rbind(headers100, headers400)
 
+# barplot
+
+bp_data <- read.csv("x.csv")
+
 ```
+
+
+# Barplot Data
+## how to get the the confidence interval
+```{r}
+data_summary <- function(data, varname, groupnames){
+  require(plyr)
+  summary_func <- function(x, col){
+    c(mean = mean(x[[col]], na.rm=TRUE),
+      sd = sd(x[[col]], na.rm=TRUE))
+  }
+  data_sum<-ddply(data, groupnames, .fun=summary_func,
+                  varname)
+  data_sum <- rename(data_sum, c("mean" = varname))
+ return(data_sum)
+}
+
+data_summary(bp_data, varname = totalCPM, groupnames = c(seq, sampEvent))
+
+```
+
+## draw plot gplot
+```{r}
+
+df <- bp_data %>% filter(totalCPM != 0)
+
+# create bar plot with reodering of y-axis variable
+# use scales parameter to remove empty variable from y-axis
+ggplot(df, aes(y=reorder_within(seq,totalCPM, sampEvent), x=totalCPM, fill=seq))+
+  geom_col()+
+  facet_wrap(~sampEvent, scales= "free", drop =T)+
+    scale_y_discrete(labels =  with(df,     as.character(seq)))+
+  labs(y="", x="")
+
+```
+
+## base R
+Split data into different groups
+```{r}
+# colors for graph
+bp_data$cols = as.numeric(as.factor(bp_data$group))
+bp_data <- bp_data[order(bp_data$cols,decreasing = TRUE),]
+bp_data$cols_vir = rep(viridis(39), each= 6)
+
+# filter out 0s
+df = bp_data %>% filter(totalCPM != 0)
+
+# subset into groups
+SJR2 = subset(df, sampEvent == "SJR2")
+YBP1 = subset(df, sampEvent == "YBP1")
+LSZ2 = subset(df, sampEvent == "LSZ2")
+SJR1 = subset(df, sampEvent == "SJR1")
+YBP2 = subset(df, sampEvent == "YBP2")
+WLD2 = subset(df, sampEvent == "WLD2")
+
+```
+
+
+
+```{r}
+# order all of the datasets
+SJR1 <- SJR1[order(SJR1$totalCPM,decreasing = TRUE),]
+SJR2 <- SJR2[order(SJR2$totalCPM,decreasing = TRUE),]
+YBP2 <- YBP2[order(YBP2$totalCPM,decreasing = TRUE),]
+YBP1 <- YBP1[order(YBP1$totalCPM,decreasing = TRUE),]
+LSZ2 <- LSZ2[order(LSZ2$totalCPM,decreasing = TRUE),]
+WLD2 <- WLD2[order(WLD2$totalCPM,decreasing = TRUE),]
+
+pdf("C:/Users/dylan/OneDrive/Desktop/Copepods/Copepods/Figures/Samp Event Barplot.pdf",
+    height = 10,
+    width = 20)
+# now plot all of them
+par(mfrow = c(2,4))
+
+
+# SJR1
+barplot(SJR1$totalCPM,names.arg = SJR1$seq, col = SJR1$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim = c(0,301), main="SJR1")
+
+# LSZ2
+barplot(LSZ2$totalCPM,names.arg = LSZ2$seq, col = LSZ2$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim = c(0,350), main="LSZ2")
+
+# YBP2
+barplot(YBP2$totalCPM,names.arg = YBP2$seq, col = YBP2$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim = c(0,250), main="YBP2")
+
+# legend only 1 time
+plot(0, 0, type = 'l', bty = 'n', xaxt = 'n', yaxt = 'n', xlab="", ylab="")
+legend("center", legend = unique(bp_data$group), pch=16, col= unique(bp_data$cols_vir), ncol=2)
+
+
+# SJR2
+barplot(SJR2$totalCPM,names.arg = SJR2$seq, col = SJR2$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim = c(0, 120), main= "SJR2")
+
+# WLD2
+barplot(WLD2$totalCPM,names.arg = WLD2$seq, col = WLD2$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim = c(0,140), main="WLD2")
+
+# YBP1
+barplot(YBP1$totalCPM,names.arg = YBP1$seq, col = YBP1$cols_vir, las =2, cex.lab=1, cex.axis =1, col.axis="black", ylim= c(0, 400), main="YBP1")
+
+
+
+#par(mfrow = c(1,1))
+dev.off()
+```
+
+
+######################################################################################
+# Below Before data was changed
 
 # run with other dataframe
 ```{r}
@@ -119,8 +234,81 @@ ggplot(data= YBP1, aes(x= reorder(grp_typ, -average, FUN = sum), y=average, colo
   scale_y_continuous(name = "Avaerage of Total Counts", breaks = seq(0,1080, 50))
 
 ```
+
+# replicates and mean geom point
+```{r}
+SJR2_reps = subset(grpsz_reps, samp_ev == "SJR2")
+SJR2 = subset(ctbmn_grptyp_mnct, samp_ev == "SJR2")
+SJR2 <- SJR2[!(SJR2$exp == "IC"), ]
+SJR2$grp_sz = SJR2$category
+
+SJR2_reps <- subset(SJR2_reps, grp_sz %in% SJR2$grp_sz)
+
+# make quality pdf file
+pdf(file = "Figures/SJR2 means and replicates.pdf",
+    width =10,
+    height = 8)
+
+ggplot(data= SJR2, aes(x= reorder(grp_sz, mn_ct, 
+                                  FUN = sum, decreasing = TRUE), 
+                       y=mn_ct, color=exp))+
+  geom_point(stat="identity", position='identity', size = 3)+
+  labs(x="", title = "SJR2 Means and Replicates Counts")+
+  theme_bw()+
+  theme(axis.text.x = element_text(), 
+       axis.text.y = element_text(size=6))+
+  scale_color_manual(values=c('#E69F00','#56B4E9'))+
+  #scale_y_continuous(name = "Mean of Total Counts", breaks = seq(0,1080, 50))
+  scale_y_log10(name = "Mean Counts with Replicate Counts")+
+  geom_point(data=SJR2_reps, aes(x= grp_sz, y = (counts)),
+             shape = 1, size=2)+
+  coord_flip()
+dev.off()
 ```
 
+SJR1
+```{r}
+SJR1_reps = subset(grpsz_reps, samp_ev == "SJR1")
+SJR1 = subset(ctbmn_grptyp_mnct, samp_ev == "SJR1")
+SJR1 <- SJR1[!(SJR1$exp == "IC"), ]
+SJR1$grp_sz = SJR1$category
+
+SJR1_reps <- subset(SJR1_reps, grp_sz %in% SJR1$grp_sz)
+
+# make quality pdf file
+pdf(file = "Figures/SJR1 means and replicates.pdf",
+    width =10,
+    height = 8)
+
+ggplot(data= SJR1, aes(x= reorder(grp_sz, mn_ct, 
+                                  FUN = sum, decreasing = TRUE), 
+                       y=mn_ct, color=exp))+
+  geom_point(stat="identity", position='identity', size = 3)+
+  labs(x="", title = "SJR1 Means and Replicates Counts")+
+  theme_bw()+
+  theme(axis.text.x = element_text(), 
+       axis.text.y = element_text(size=6))+
+  scale_color_manual(values=c('#E69F00','#56B4E9'))+
+  #scale_y_continuous(name = "Mean of Total Counts", breaks = seq(0,1080, 50))
+  scale_y_log10(name = "Mean Counts with Replicate Counts")+
+  geom_point(data=SJR1_reps, aes(x= grp_sz, y = (counts)),
+             shape = 1, size=2)+
+  coord_flip()
+dev.off()
+```
+
+
+# boxplot version of above
+```{r}
+pdf(file = "Figures/SJR2 boxplots.pdf",
+    width =15,
+    height = 8)
+ggplot(SJR2_reps, aes(x= reorder(grp_sz, counts, FUN = sum, decreasing = T), y = counts, fill=exp))+
+  geom_boxplot(position = position_dodge(1))+
+  labs(x="", title = "SJR2 Boxplots")+
+  coord_flip()
+dev.off()
+```
 
 
 ## Microplankton ambient analysis
